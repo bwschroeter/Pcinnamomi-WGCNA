@@ -38,7 +38,7 @@ library(clusterProfiler)
 ```
 
 Load Phytophthora cinnamomi gtf file, clean up to get Gene IDs
-
+adding line
 Combine alternatively spliced transcripts (seen in transcript_id as -RA and RB)
 
 ```{r}
@@ -100,16 +100,6 @@ names(gul) <- lapply(1:length(gu), function(i){
 head(names(gul))
 
 ```
-
-```{r}
-# Find the element within the list named "X"
-matching_element <- gul$X
-
-# Display the matching element
-matching_element
-```
-
-
 Assemble count matrix and coldata file
 
 ```{r, echo=FALSE}
@@ -335,7 +325,7 @@ module.total <- table(bwnet$colors)
 #create traits file - assign 1 if a sample is a certain stage, else assign 0
 Dis_traits <- colData %>% 
   mutate(Dis.vs.all = ifelse(grepl('Treated', Treatment), 1, 0)) %>% 
-  select(5)
+  select(4)
 
 
 factor_levels <- unique(colData$Stage)
@@ -624,7 +614,7 @@ MEs <- bwnet$MEs
 rownames(MEs)=names(norm.counts[,9])
 #pheatmap(MEs,cluster_col=T,cluster_row=T,show_rownames=F,show_colnames=T,fontsize=6)
 
-col_ann <- colData[,c(1,4)]
+col_ann <- colData[,c(1,3)]
 rownames(col_ann) <- col_ann$Sample
 col_ann <- data.frame(col_ann)
 col_ann$Stage <- as.factor(col_ann$Stage)
@@ -764,8 +754,9 @@ eorahm <- pheatmap(heatmap_matrix,
          scale = "none",
          fontsize_col = 8,
          fontsize_row = 6,
-        main = "Early Module Enrichment Score",
+         main = "Early Module Enrichment Score",
          filename = "pheatmap1.png")
+
 
 ```
 
@@ -980,91 +971,16 @@ late <-pheatmap(heatmap_matrix,
 hml <- as.data.frame.matrix(heatmap_matrix)
 ```
 
-```{r}
-
-module_genes_list_late <- get_module_genes_all(lateeiginengene, module_list)
-
-results <- lapply(names(module_genes_list_late), function(module.color) {
-  ora_res <- as.data.frame(enricher(gene = module_genes_list_late[[module.color]],
-                                    universe = bg,
-                                    maxGSSize = 5000,
-                                    TERM2GENE = genesets,
-                                    pAdjustMethod = "fdr",
-                                    pvalueCutoff = 1,
-                                    qvalueCutoff = 1))
-  
-  ora_res$geneID <- NULL
-  ora_res <- subset(ora_res, (ora_res$p.adjust < 0.05 & ora_res$Count >= 5))
-  ora_res_names <- rownames(ora_res)
-  
-  ora_res$GeneRatio <- as.character(ora_res$GeneRatio)
-  
-  gr <- as.numeric(sapply(strsplit(as.character(ora_res$GeneRatio), "/"), "[[", 1)) /
-    as.numeric(sapply(strsplit(as.character(ora_res$GeneRatio), "/"), "[[", 2))
-  
-  br <- as.numeric(sapply(strsplit(as.character(ora_res$BgRatio), "/"), "[[", 1)) /
-    as.numeric(sapply(strsplit(as.character(ora_res$BgRatio), "/"), "[[", 2))
-  
-  ora_res$es <- gr/br
-  ora_res <- ora_res[order(-ora_res$es), ]
-  ora_res$Description <- NULL
-  
-  return(ora_res)
-})
-
-names(results) <- names(module_genes_list_late)
-
-all_ids <- unlist(lapply(results, function(module_results) {
-  module_results$ID[module_results$es >= 3]
-}))
-
-unique_ids <- unique(all_ids)
-
-print(unique_ids)
-
-# Get all unique IDs across all color modules
-unique_ids <- unique(unlist(lapply(results, function(x) x$ID)))
-
-# Create empty matrix to hold values for heatmap
-heatmap_matrix <- matrix(0, nrow = length(unique_ids), ncol = length(module_list), 
-                         dimnames = list(unique_ids, module_list))
-
-# Fill in matrix with es values where available
-for (module_color in names(results)) {
-  module_results <- results[[module_color]]
-  module_genes <- module_results$ID
-  module_es <- module_results$es
-  for (i in seq_along(unique_ids)) {
-    if (unique_ids[i] %in% module_genes) {
-      heatmap_matrix[i, module_color] <- module_es[which(module_genes == unique_ids[i])]
-    }
-  }
-}
-
-late <- pheatmap(heatmap_matrix, 
-         cluster_rows = FALSE,
-         cluster_cols = FALSE,
-         color = colorRampPalette(c("white", "red"))(100),
-         scale = "none",
-         fontsize_col = 8,
-         fontsize_row = 6,
-         main = "Late Module Enrichment Score", 
-         filename = "pheatmap4.png")
-
-```
-
-
-
 ```{r, echo=FALSE, out.width='100%'}
-knitr::include_graphics("~/WGCNA_Pcinnamomi/pheatmap1.png")
+knitr::include_graphics("~/Schroeter_Pcinnamomi/WGCNA_Pcinnamomi/pheatmap1.png")
 ```
 
 ```{r, echo=FALSE, out.width='100%'}
-knitr::include_graphics("~/WGCNA_Pcinnamomi/pheatmap2.png")
+knitr::include_graphics("~/Schroeter_Pcinnamomi/WGCNA_Pcinnamomi/pheatmap2.png")
 ```
 
 ```{r, echo=FALSE, out.width='100%'}
-knitr::include_graphics("~/WGCNA_Pcinnamomi/pheatmap3.png")
+knitr::include_graphics("~/Schroeter_Pcinnamomi/WGCNA_Pcinnamomi/pheatmap3.png")
 ```
 
 ```{r Session Info, echo=FALSE}
